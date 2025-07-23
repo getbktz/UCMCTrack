@@ -20,6 +20,7 @@ class Detection:
         self.track_id = 0
         self.y = np.zeros((2, 1))
         self.R = np.eye(4)
+        self.keypoints = None
 
 
     def __str__(self):
@@ -47,10 +48,11 @@ class Detector:
         frame = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  
 
         # RTDETR
-        results = self.model(frame, imgsz = 1088)
+        results = self.model(frame) #, imgsz = 1088)
+        has_keypoints = results[0].keypoints is not None
 
-        det_id = 0
-        for box in results[0].boxes:
+        det_id = 0     
+        for i, box in enumerate(results[0].boxes):
             conf = box.conf.cpu().numpy()[0]
             bbox = box.xyxy.cpu().numpy()[0]
             cls_id  = box.cls.cpu().numpy()[0]
@@ -67,14 +69,35 @@ class Detector:
             det.conf = conf
             det.det_class = cls_id
             det.y,det.R = self.mapper.mapto([det.bb_left,det.bb_top,det.bb_width,det.bb_height])
+            if has_keypoints:
+                det.keypoints = results[0].keypoints[i]
+            
             det_id += 1
-
             dets.append(det)
-
+                
         return dets
     
 
 def main(args):
+
+    # --- Pose Drawing Configuration ---
+    # COCO keypoints mapping (0-indexed for 17 keypoints used by YOLOv8-Pose)
+    # For details, see: https://docs.ultralytics.com/tasks/pose/
+    SKELETON = [
+        [15, 13], [13, 11], [16, 14], [14, 12], [11, 12], [5, 11], [6, 12], [5, 6],
+        [5, 7], [6, 8], [7, 9], [8, 10], [1, 2], [0, 1], [0, 2], [1, 3], [2, 4]
+    ]
+
+    # Function to generate a unique and visible color for each track ID
+    def get_color(idx):
+        idx = idx * 3
+        # A simple way to generate visually distinct colors
+        color = ((37 * idx) % 255, (17 * idx) % 255, (29 * idx) % 255)
+        return color
+
+    # Confidence threshold for drawing keypoints and limbs
+    KPT_THRESH = args.pose_thresh
+    # --- End Pose Drawing Configuration ---
 
     class_list = [int(cls) for cls in args.detected_classes.split(',')]
 
@@ -103,13 +126,30 @@ def main(args):
         if not ret:  
             break
     
-        dets = detector.get_dets(frame_img,args.conf_thresh,class_list)
-        tracker.update(dets,frame_id)
+        dets = detector.get_dets(frame_img, args.conf_thresh, class_list)
+        tracker.update(dets, frame_id)
 
         for det in dets:
             if det.track_id > 0:
-                cv2.rectangle(frame_img, (int(det.bb_left), int(det.bb_top)), (int(det.bb_left+det.bb_width), int(det.bb_top+det.bb_height)), (0, 255, 0), 2)
+                #cv2.rectangle(frame_img, (int(det.bb_left), int(det.bb_top)), (int(det.bb_left+det.bb_width), int(det.bb_top+det.bb_height)), (0, 255, 0), 2)
                 cv2.putText(frame_img, str(det.track_id), (int(det.bb_left), int(det.bb_top)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2)
+            if det.track_id > 0 and det.keypoints is not None:
+                # Extract keypoints and their confidences
+                kpts = det.keypoints.xy.cpu().numpy()[0]
+                confs = det.keypoints.conf.cpu().numpy()[0]
+                track_color = get_color(det.track_id)
+                # Draw skeleton limbs
+                for sk in SKELETON:
+                    p1_idx, p2_idx = sk
+                    if confs[p1_idx] > KPT_THRESH and confs[p2_idx] > KPT_THRESH:
+                        p1 = (int(kpts[p1_idx, 0]), int(kpts[p1_idx, 1]))
+                        p2 = (int(kpts[p2_idx, 0]), int(kpts[p2_idx, 1]))
+                        cv2.line(frame_img, p1, p2, track_color, 2)
+                # Draw keypoints
+                for i in range(kpts.shape[0]):
+                    if confs[i] > KPT_THRESH:
+                        p = (int(kpts[i, 0]), int(kpts[i, 1]))
+                        cv2.circle(frame_img, p, 3, track_color, -1)
 
         frame_id += 1
 
@@ -129,7 +169,7 @@ def main(args):
 
 parser = argparse.ArgumentParser(description='Process some arguments.')
 parser.add_argument('--video', type=str, default = "demo/demo.mp4", help='video file name')
-parser.add_argument('--cam_para', type=str, default = "demo/cam_para.txt", help='camera parameter file name')
+parser.add_argument('--cam_para', type=str, default = "demo/cam_para_bktz.txt", help='camera parameter file name')
 parser.add_argument('--video_outfile', type=str, default = "demo/demo_out.mp4", help='video output file name')
 parser.add_argument('--wx', type=float, default=5, help='wx')
 parser.add_argument('--wy', type=float, default=5, help='wy')
@@ -140,10 +180,9 @@ parser.add_argument('--high_score', type=float, default=0.5, help='high score th
 parser.add_argument('--conf_thresh', type=float, default=0.01, help='detection confidence threshold')
 parser.add_argument('--detected_classes', type=str, default="0,32", help='list of detection classes for YOLO')
 parser.add_argument('--show_video', action=argparse.BooleanOptionalAction, default=True, help='Show video window. Use --no-show-video to disable.')
-parser.add_argument('--model_path', type=str, default='pretrained/yolov8x.pt', help='model path')
+parser.add_argument('--model_path', type=str, default='yolov8x-pose.pt', help='model path')
+parser.add_argument('--pose_thresh', type=float, default=0.01, help='pose keypoint confidence threshold')
 args = parser.parse_args()
 
 main(args)
-
-
 
