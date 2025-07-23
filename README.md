@@ -32,17 +32,17 @@ pip install -r requirements.txt
 
 - Run the updated inference script
 ```bash
-python /content/UCMCTrack/demo_bktz.py --cam_para /content/UCMCTrack/demo/cam_para_bktz_right.txt --video /content/data/videos/test.mp4 --video_outfile /content/data/videos/test_ucmc.mp4 --model_path='yolo12m.pt' --cdt=60.0 --high_score=0.6 --show_video=False
+python /content/UCMCTrack/demo_bktz.py --cam_para /content/UCMCTrack/demo/cam_para_bktz_right.txt --video /content/data/videos/test.mp4 --video_outfile /content/data/videos/test_ucmc.mp4 --model_path='yolo12m.pt' --cdt=60.0 --high_score=0.6 --no-show_video
 ```
 The file `demo/cam_para_bktz_right.txt` is the camera parameters estimated from a single image. There are files for _left, _center, and _right which correspond to the side of the court shown during the video.
 
 ##### Parameters
-- --show_video (bool, True/False): Whether to show or hide the OpenCV window of each frame while processed. Must be False in COLAB or headless environments.
+- --no-show_video: Do not show the OpenCV window of each frame while processed. Must be used in COLAB or headless environments.
 - --cam_para (string, Path): Camera parameters estimated from a single image. There are files for cam_para_bktz_left, _center, and _right in the demo folder which correspond to the side of the court shown during the video.
 - --video (string, Path): Path to input video file.
 - --video_outfile (string, Path): Path to output video file to be saved after processing.
 - --model_path (string): Name of YOLO model checkpoint to use for detection
-- --cdt (float):
+- --cdt (float): Coasted deletion time. Use higher values to maintain tracks for longer duration when confidence or detection drops. Defaults to 10.0.
 - --high_score (float): Confidence score required to initialize a track for an object.
 - --conf_thresh (float): Lowest confidence score required to detect an object.
 - --detected_classes (string, List): Comma separated list of class ID's to detect in YOLO. Defaults to "0,32" for Person, Sports Ball
