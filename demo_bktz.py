@@ -139,7 +139,7 @@ parser.add_argument('--cdt', type=float, default=10.0, help='coasted deletion ti
 parser.add_argument('--high_score', type=float, default=0.5, help='high score threshold')
 parser.add_argument('--conf_thresh', type=float, default=0.01, help='detection confidence threshold')
 parser.add_argument('--detected_classes', type=str, default="0,32", help='list of detection classes for YOLO')
-parser.add_argument('--show_video', type=bool, default=True, help='show video window')
+parser.add_argument('--show_video', action=argparse.BooleanOptionalAction, default=True, help='Show video window. Use --no-show-video to disable.')
 parser.add_argument('--model_path', type=str, default='pretrained/yolov8x.pt', help='model path')
 args = parser.parse_args()
 
