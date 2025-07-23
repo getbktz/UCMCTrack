@@ -13,17 +13,6 @@
 ## 📷 Estimating Camera Parameter from a Single Image
 ![](docs/cam_para.gif)
 
-## 📰 News
-* [12/29/2023]  **Open-Sourcing a Tool for Estimating Camera Parameters from a Single Image！** For specific steps, refer to Get Started.
-* [01/02/2024]  **Usage Guide Now Available for the Camera Parameter Estimation Tool!** 
-* [01/02/2024]  **Add head padding (HP) post-processing trick as OC-SORT.** Now the performance gap between the Python version of the code and the C++ version in the paper has been eliminated.
-
-## 📈 Star Rising
-[![Star History Chart](https://api.star-history.com/svg?repos=corfyi/UCMCTrack&type=Timeline)](https://star-history.com/#corfyi/UCMCTrack&Timeline)
-
-## ⭐ Stargazers
-[![Stargazers repo roster for @corfyi/UCMCTrack](http://reporoster.com/stars/corfyi/UCMCTrack)](https://github.com/corfyi/UCMCTrack/stargazers) [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fcorfyi%2FUCMCTrack&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
-
 ## 🚩 Usage
 This demo demonstrates the use of YOLOv8x as the detector and UCMCTrack as the tracker for real-time vehicle detection and tracking from a video file. The demo processes the video file `demo.mp4` to detect and track vehicles, saving the tracking results in the `output` folder. **In the case of significant camera shake**, UCMCTrack still has good performance without using any appearance information.
 
@@ -47,7 +36,7 @@ python /content/UCMCTrack/demo_bktz.py --cam_para /content/UCMCTrack/demo/cam_pa
 ```
 The file `demo/cam_para_bktz_right.txt` is the camera parameters estimated from a single image. There are files for _left, _center, and _right which correspond to the side of the court shown during the video.
 
--Parameters
+##### Parameters
 - --show_video (bool, True/False): Whether to show or hide the OpenCV window of each frame while processed. Must be False in COLAB or headless environments.
 - --cam_para (string, Path): Camera parameters estimated from a single image. There are files for cam_para_bktz_left, _center, and _right in the demo folder which correspond to the side of the court shown during the video.
 - --video (string, Path): Path to input video file.
