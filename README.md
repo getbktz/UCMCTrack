@@ -24,7 +24,7 @@
 ## ⭐ Stargazers
 [![Stargazers repo roster for @corfyi/UCMCTrack](http://reporoster.com/stars/corfyi/UCMCTrack)](https://github.com/corfyi/UCMCTrack/stargazers) [![Hits](https://hits.seeyoufarm.com/api/count/incr/badge.svg?url=https%3A%2F%2Fgithub.com%2Fcorfyi%2FUCMCTrack&count_bg=%2379C83D&title_bg=%23555555&icon=&icon_color=%23E7E7E7&title=hits&edge_flat=false)](https://hits.seeyoufarm.com)
 
-## 🚩 Demo
+## 🚩 Usage
 This demo demonstrates the use of YOLOv8x as the detector and UCMCTrack as the tracker for real-time vehicle detection and tracking from a video file. The demo processes the video file `demo.mp4` to detect and track vehicles, saving the tracking results in the `output` folder. **In the case of significant camera shake**, UCMCTrack still has good performance without using any appearance information.
 
 #### Environment
@@ -34,12 +34,30 @@ Before you begin, ensure you have the following prerequisites installed on your 
 - Ultralytics Library
 - Download weight file [yolov8x.pt](https://github.com/ultralytics/assets/releases/download/v0.0.0/yolov8x.pt) to folder `pretrained`
 
-#### Run the demo
+#### Run in COLAB
+- Install the required dependency packages 
 
 ```bash
-python demo.py --cam_para demo/cam_para.txt --video demo/demo.mp4
+pip install -r requirements.txt
 ```
-The file `demo/cam_para.txt` is the camera parameters estimated from a single image. The code of this tool is released.  For specific steps, please refer to the Get Started.
+
+- Run the updated inference script
+```bash
+python /content/UCMCTrack/demo_bktz.py --cam_para /content/UCMCTrack/demo/cam_para_bktz_right.txt --video /content/data/videos/test.mp4 --video_outfile /content/data/videos/test_ucmc.mp4 --model_path='yolo12m.pt' --cdt=60.0 --high_score=0.6 --show_video=False
+```
+The file `demo/cam_para_bktz_right.txt` is the camera parameters estimated from a single image. There are files for _left, _center, and _right which correspond to the side of the court shown during the video.
+
+-Parameters
+- --show_video (bool, True/False): Whether to show or hide the OpenCV window of each frame while processed. Must be False in COLAB or headless environments.
+- --cam_para (string, Path): Camera parameters estimated from a single image. There are files for cam_para_bktz_left, _center, and _right in the demo folder which correspond to the side of the court shown during the video.
+- --video (string, Path): Path to input video file.
+- --video_outfile (string, Path): Path to output video file to be saved after processing.
+- --model_path (string): Name of YOLO model checkpoint to use for detection
+- --cdt (float):
+- --high_score (float): Confidence score required to initialize a track for an object.
+- --conf_thresh (float): Lowest confidence score required to detect an object.
+- --detected_classes (string, List): Comma separated list of class ID's to detect in YOLO. Defaults to "0,32" for Person, Sports Ball
+- --vmax (int): Velocity range modifier for moving objects. Defaults to 10.0. Only increase for fast moving objects which are not detected.
 
 ## 🗼 Pipeline of UCMCTrack
 First, the detection boxes are mapped onto the ground plane using homography transformation. Subsequently, the Correlated Measurement Distribution (CMD) of the target is computed. This distribution is then fed into a Kalman filter equipped with the Constant Velocity (CV) motion model and Process Noise Compensation (PNC). Next, the mapped measurement and the predicted track state are utilized as inputs to compute the Mapped Mahalanobis Distance (MMD). Finally, the Hungarian algorithm is applied to associate the mapped measurements with tracklets, thereby obtaining complete tracklets.
@@ -135,6 +153,7 @@ This directory provides camera parameters we have estimated:
 ```
 We have provided the camera parameter files estimated on the datasets MOT17, MOT20 and DanceTrack. The specific format of the camera parameter file consists of following three parts. Among them, $IntrinsicMatrix$ represents the intrinsic parameters Ki of the camera, the first and second columns represent the focal lengths of the camera in the x and y directions, and the third column is the offset when the origin of the physical imaging plane moves to the pixel plane. $RotationMatrices$ and $TranslationVectors$ represent key components of the camera’s extrinsic parameters Ko. Among them, $RotationMatrices$ represents the rotation of the camera relative to the ground plane, while $TranslationVectors$ represents the offset of the camera relative to the ground plane, in millimeters.
 
+
 #### Sample
 ```txt
 RotationMatrices
@@ -151,18 +170,6 @@ IntrinsicMatrix
 0 0 1 
 ```
 
-
-
-## 🗺 Roadmap
-
-We are continuously updating UCMCTrack and warmly welcome contributions to enhance its value for the community. Our current high-priority tasks are as follows:
-
-- [x] ~~Release code for replicating results on MOT17 dataset.~~
-- [x] ~~Release code for replicating results on MOT20 dataset.~~
-- [x] ~~Implement a demo of UCMCTrack based on YOLOv8.~~
-- [x] ~~Release code for estimating camera parameters from a single picture.~~
-- [ ] Release code for replicating results on DanceTrack dataset.
-- [ ] Release code for replicating results on Kitti dataset.
 
 ## 📋 Citation
 ```bibtex
