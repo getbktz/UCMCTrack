@@ -32,7 +32,7 @@ pip install -r requirements.txt
 
 - Run the updated inference script
 ```bash
-python /content/UCMCTrack/demo_bktz.py --cam_para /content/UCMCTrack/demo/cam_para_bktz_right.txt --video /content/data/videos/test.mp4 --video_outfile /content/data/videos/test_ucmc.mp4 --model_path='yolo12m.pt' --cdt=60.0 --high_score=0.6 --no-show_video
+python /content/UCMCTrack/demo_bktz.py --cam_para /content/UCMCTrack/demo/cam_para_bktz_right.txt --video /content/data/videos/test.mp4 --video_outfile /content/data/videos/test_ucmc.mp4 --model_path='yolo11s-pose.pt' --cdt=60.0 --high_score=0.6 --no-show_video
 ```
 The file `demo/cam_para_bktz_right.txt` is the camera parameters estimated from a single image. There are files for _left, _center, and _right which correspond to the side of the court shown during the video.
 
@@ -42,11 +42,12 @@ The file `demo/cam_para_bktz_right.txt` is the camera parameters estimated from 
 - --video (string, Path): Path to input video file.
 - --video_outfile (string, Path): Path to output video file to be saved after processing.
 - --model_path (string): Name of YOLO model checkpoint to use for detection
-- --cdt (float): Coasted deletion time. Use higher values to maintain tracks for longer duration when confidence or detection drops. Defaults to 10.0.
-- --high_score (float): Confidence score required to initialize a track for an object.
-- --conf_thresh (float): Lowest confidence score required to detect an object.
 - --detected_classes (string, List): Comma separated list of class ID's to detect in YOLO. Defaults to "0,32" for Person, Sports Ball
-- --vmax (int): Velocity range modifier for moving objects. Defaults to 10.0. Only increase for fast moving objects which are not detected.
+- --high_score (float): Confidence score required to initialize a track for an object. Defaults to 0.5.
+- --conf_thresh (float): Lowest confidence score required to detect an object. Defaults to 0.01.
+- --pose_thresh (float): Lowest confidence score required to detect a pose. Defaults to 0.01.
+- --cdt (float): Coasted deletion time. Use higher values to maintain tracks for longer duration when confidence or detection drops. Defaults to 10.0.
+- --vmax (int): Velocity range modifier for moving objects. Only increase for fast moving objects which are not detected. Defaults to 10.0.
 
 ## 🗼 Pipeline of UCMCTrack
 First, the detection boxes are mapped onto the ground plane using homography transformation. Subsequently, the Correlated Measurement Distribution (CMD) of the target is computed. This distribution is then fed into a Kalman filter equipped with the Constant Velocity (CV) motion model and Process Noise Compensation (PNC). Next, the mapped measurement and the predicted track state are utilized as inputs to compute the Mapped Mahalanobis Distance (MMD). Finally, the Hungarian algorithm is applied to associate the mapped measurements with tracklets, thereby obtaining complete tracklets.
